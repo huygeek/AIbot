@@ -122,6 +122,7 @@ class ChatGPTTelegramBot:
         return False
 
 
+
         
     async def help(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
         """
