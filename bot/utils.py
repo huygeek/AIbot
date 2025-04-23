@@ -80,7 +80,7 @@ async def summarize_url(url: str, update: Update = None, context: CallbackContex
         trimmed_content = content[:6000]
     
         prompt = (
-            "Tóm tắt nội dung sau bằng tiếng Việt như kể lại cho bạn thân. "
+            "Tóm tắt nội dung sau bằng tiếng Việt như kể lại cho bạn thân. Loại bỏ mô tả HTML "
             "Mỗi ý viết trên một dòng, bắt đầu bằng ❖, xuống dòng dùng <br/>.\n"
             "Ví dụ:\n"
             "❖ Dự án này thuộc tuyến cao tốc Bắc Nam.<br/>\n"
