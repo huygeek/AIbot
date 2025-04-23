@@ -77,8 +77,10 @@ async def summarize_url(url: str, update: Update = None, context: CallbackContex
             return "E chưa tóm tắt được nội dung. Cho e xin link rõ ràng hơn ạ."
 
     prompt = (
-        "Tóm tắt nội dung sau bằng tiếng Việt. Trình bày ngắn gọn, mỗi ý trên một dòng rõ ràng."
-        " Tránh viết đoạn văn dài.\n\n"
+        "Tóm tắt nội dung sau bằng tiếng Việt, theo phong cách thân thiện như đang kể lại cho bạn bè.\n"
+        "Mỗi ý viết trên một dòng, bắt đầu bằng biểu tượng ❖, chèn <br/> để xuống dòng.\n"
+        "Cuối cùng chốt lại bằng một câu kiểu như 'Đấy, ngắn gọn dễ hiểu chưa 😂. Em gửi nha sếp 😌' "
+        "hoặc 'Vậy nha anh yêu 🫶', tùy vibe nội dung.\n\n"
         f"{content}"
     )
     try:
