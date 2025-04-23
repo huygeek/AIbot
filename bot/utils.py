@@ -13,13 +13,14 @@ from telegram.ext import CallbackContext, ContextTypes
 
 from usage_tracker import UsageTracker
 from openai import AsyncOpenAI
-import asyncio  # ✅ Fix lỗi thiếu import asyncio
+
 
 def get_openai_client():
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         raise RuntimeError("❌ Thiếu biến môi trường OPENAI_API_KEY.")
     return AsyncOpenAI(api_key=api_key)
+
 
 def extract_text_from_url(url: str) -> str:
     try:
@@ -42,7 +43,7 @@ async def summarize_url(url: str, update: Update = None, context: CallbackContex
                 and update.message.reply_to_message.from_user.id == context.bot.id
             )
             if not is_mentioned and not is_reply_to_bot:
-                return 
+                return ""  # Không phản hồi nếu không được mention hoặc reply
 
     content = extract_text_from_url(url)
     if not content or len(content.strip()) < 100:
@@ -64,6 +65,7 @@ async def summarize_url(url: str, update: Update = None, context: CallbackContex
         return response.choices[0].message.content.strip()
     except Exception as e:
         return f"❌ Lỗi khi gọi OpenAI: {e}"
+
 
 # (The rest of the file remains unchanged.)
 
