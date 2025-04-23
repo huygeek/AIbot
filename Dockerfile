@@ -1,33 +1,40 @@
 FROM python:3.10-slim
 
-# Install system dependencies
+# Cài dependencies
 RUN apt-get update && apt-get install -y \
-    ffmpeg \
     curl \
+    wget \
+    gnupg \
+    ffmpeg \
     libnss3 \
+    libatk-bridge2.0-0 \
     libxcomposite1 \
     libxdamage1 \
     libxfixes3 \
-    libatk1.0-0 \
-    libatk-bridge2.0-0 \
-    libatspi2.0-0 \
     libxkbcommon0 \
+    libgtk-3-0 \
+    libdrm2 \
     libgbm1 \
-    libxcb1 \
     libasound2 \
+    libxrandr2 \
+    libxss1 \
+    libxtst6 \
+    libatk1.0-0 \
     libnspr4 \
     libdbus-1-3 \
+    fonts-liberation \
+    libappindicator3-1 \
+    xdg-utils \
     && rm -rf /var/lib/apt/lists/*
 
-# Create working directory
+# Tạo thư mục làm việc
 WORKDIR /app
-
-# Copy files
 COPY . .
 
-# Install Python dependencies
+# Cài Python package
 RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 
+# Cài Chromium cho Playwright
+RUN python -m playwright install chromium
 
-# Run the bot
-CMD ["python", "bot/main.py"]
+CMD ["python", "main.py"]
