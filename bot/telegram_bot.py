@@ -110,8 +110,10 @@ class ChatGPTTelegramBot:
                 if word.startswith("http"):
                     try:
                         await update.message.reply_chat_action(action=constants.ChatAction.TYPING)
-                        summary = await summarize_url(word, update, context)  # ✅ đúng cú pháp async
+                        summary = await summarize_url(url, update, context)
+                        if summary:  # Chỉ gửi nếu có nội dung thực sự
                         await update.message.reply_text(summary[:4096])
+
                     except Exception as e:
                         await update.message.reply_text(f"❌ Lỗi khi tóm tắt: {e}")
                     return True  # đã xử lý rồi
