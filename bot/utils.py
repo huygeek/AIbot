@@ -31,45 +31,29 @@ def extract_text_from_url(url: str) -> str:
         return f"❌ Lỗi khi trích xuất nội dung: {e}"
 
 
-async def summarize_url(url: str, update: Update = None, context: CallbackContext = None) -> str:
-    """
-    Tóm tắt nội dung của một URL nếu bot được mention hoặc được reply trong nhóm.
-    """
-    if update and context:
-        if update.effective_chat.type in [constants.ChatType.GROUP, constants.ChatType.SUPERGROUP]:
-            bot_username = context.bot.username.lower()
-            message_text_lower = (update.message.text or "").lower()
-            is_mentioned = f"@{bot_username}" in message_text_lower
-            is_reply_to_bot = (
-                update.message.reply_to_message
-                and update.message.reply_to_message.from_user.id == context.bot.id
-            )
-            if not is_mentioned and not is_reply_to_bot:
-                return None
+    async def summarize_and_reply(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """
+        Tự động tóm tắt nội dung khi tin nhắn chứa 'tóm tắt' và URL,
+        và bot được mention hoặc bị reply trong nhóm.
+        """
+        prompt = message_text(update.message) or ""
+        text = prompt.lower()
 
-    content = extract_text_from_url(url)
-    if not content or len(content.strip()) < 100:
-        return "E chưa tóm tắt được nội dung. Cho e xin link rõ ràng hơn ạ."
+        # Kiểm tra nếu chứa cả từ khóa và link
+        if "http" in text and "tóm tắt" in text:
+            url = next((word for word in prompt.split() if word.startswith("http")), None)
+            if url:
+                try:
+                    await update.message.reply_chat_action(action=constants.ChatAction.TYPING)
+                    summary = await summarize_url(url, update, context)
+                    if summary and isinstance(summary, str) and summary.strip():
+                        await update.message.reply_text(summary[:1000])
+                    return True
+                except Exception as e:
+                    await update.message.reply_text(f"❌ Lỗi khi tóm tắt: {e}")
+                    return True
 
-    prompt = (
-        "Tóm tắt nội dung sau bằng tiếng Việt. Trình bày ngắn gọn, mỗi ý trên một dòng rõ ràng."
-        " Tránh viết đoạn văn dài.\n\n"
-        f"{content}"
-    )
-    try:
-        client = get_openai_client()
-        response = await client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.5,
-            max_tokens=500,
-        )
-        message = response.choices[0].message
-        if message and message.content:
-            return message.content.strip()
-        return "❌ Không lấy được nội dung từ OpenAI."
-    except Exception as e:
-        return f"❌ Lỗi khi gọi OpenAI: {e}"
+        return False  # chưa xử lý
 
 
 # (The rest of the file remains unchanged.)from __future__ import annotations
