@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 import itertools
 import json
 import logging
@@ -21,26 +20,23 @@ def get_openai_client():
         raise RuntimeError("❌ Thiếu biến môi trường OPENAI_API_KEY.")
     return OpenAI(api_key=api_key)
 
-async def extract_text_from_url(url: str) -> str:
+def extract_text_from_url(url: str) -> str:
     try:
-        def run_goose():
-            with Goose() as g:
-                article = g.extract(url=url)
-                return article.cleaned_text
-
-        return await asyncio.to_thread(run_goose)
+        with Goose() as g:
+            article = g.extract(url=url)
+            return article.cleaned_text
     except Exception as e:
         return f"❌ Lỗi khi trích xuất nội dung: {e}"
 
-async def summarize_url(url: str) -> str:
-    content = await extract_text_from_url(url)
+def summarize_url(url: str) -> str:
+    content = extract_text_from_url(url)
     if not content or len(content.strip()) < 100:
         return "📄 Bot chưa tóm tắt được nội dung. Vui lòng cung cấp link rõ ràng hơn."
 
     prompt = (
-        "Tóm tắt nội dung sau bằng tiếng Việt. Trình bày ngắn gọn, mỗi ý trên một dòng rõ ràng:
-"
-        f"\n{content}"
+        "Tóm tắt nội dung sau bằng tiếng Việt. Trình bày ngắn gọn, mỗi ý trên một dòng rõ ràng.\n"
+        "Tránh viết kiểu đoạn văn dài.\n\n"
+        f"{content}"
     )
     try:
         client = get_openai_client()
