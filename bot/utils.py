@@ -37,6 +37,7 @@ def summarize_url(url: str) -> str:
         "Tóm tắt nội dung sau bằng tiếng Việt theo định dạng từng gạch đầu dòng rõ ràng, dễ đọc.\n"
         "- Mỗi ý nên ngắn gọn, chính xác.\n"
         "- Không viết theo kiểu đoạn văn dài.\n"
+        "- Giới hạn tóm tắt trong 1000 ký tự.\n"
         f"\n{content}"
     )
     try:
