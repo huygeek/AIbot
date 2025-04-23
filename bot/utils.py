@@ -59,14 +59,18 @@ async def summarize_url(url: str, update: Update = None, context: CallbackContex
     try:
         client = get_openai_client()
         response = await client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.5,
-            max_tokens=500,
-        )
-        return response.choices[0].message.content.strip()
-    except Exception as e:
-        return f"❌ Lỗi khi gọi OpenAI: {e}"
+        model="gpt-3.5-turbo",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.5,
+        max_tokens=500,
+    )
+    
+    # ✅ Tách dòng sau khi `await`, và kiểm tra kỹ:
+    message = response.choices[0].message
+    if message and message.content:
+        return message.content.strip()
+    return "❌ Không lấy được nội dung từ OpenAI."
+
 
 # (The rest of the file remains unchanged.)
 
