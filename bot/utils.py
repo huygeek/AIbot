@@ -12,14 +12,14 @@ from telegram import Message, MessageEntity, Update, ChatMember, constants
 from telegram.ext import CallbackContext, ContextTypes
 
 from usage_tracker import UsageTracker
-from openai import OpenAI
+from openai import AsyncOpenAI
 
 
 def get_openai_client():
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         raise RuntimeError("❌ Thiếu biến môi trường OPENAI_API_KEY.")
-    return OpenAI(api_key=api_key)
+    return AsyncOpenAI(api_key=api_key)
 
 
 def extract_text_from_url(url: str) -> str:
