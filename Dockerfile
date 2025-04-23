@@ -2,8 +2,8 @@ FROM python:3.10-slim
 
 # Cài dependencies
 RUN apt-get update && apt-get install -y \
-    curl \
     bash \
+    curl \
     wget \
     bash \
     gnupg \
@@ -39,4 +39,4 @@ RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 # Cài Chromium cho Playwright
 RUN python -m playwright install chromium
 
-CMD exec python bot/main.py
+CMD ["python", "bot/main.py"]
