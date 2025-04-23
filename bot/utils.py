@@ -31,7 +31,20 @@ def extract_text_from_url(url: str) -> str:
         return f"❌ Lỗi khi trích xuất nội dung: {e}"
 
 
-async def summarize_url(url: str) -> str:
+async def summarize_url(url: str, update: Update = None, context: CallbackContext = None) -> str:
+    # Chỉ tóm tắt nếu bot được mention hoặc được reply trong group
+    if update and context:
+        if update.effective_chat.type in [constants.ChatType.GROUP, constants.ChatType.SUPERGROUP]:
+            bot_username = context.bot.username.lower()
+            message_text_lower = (update.message.text or "").lower()
+            is_mentioned = f"@{bot_username}" in message_text_lower
+            is_reply_to_bot = (
+                update.message.reply_to_message
+                and update.message.reply_to_message.from_user.id == context.bot.id
+            )
+            if not is_mentioned and not is_reply_to_bot:
+                return "📵 Bot chỉ tóm tắt khi được mention hoặc reply trong nhóm."
+
     content = extract_text_from_url(url)
     if not content or len(content.strip()) < 100:
         return "E chưa tóm tắt được nội dung. Cho e xin link rõ ràng hơn ạ."
