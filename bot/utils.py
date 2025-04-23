@@ -72,6 +72,80 @@ async def summarize_url(url: str, update: Update = None, context: CallbackContex
         return f"❌ Lỗi khi gọi OpenAI: {e}"
 
 
+# (The rest of the file remains unchanged.)from __future__ import annotations
+
+import itertools
+import json
+import logging
+import os
+import base64
+from goose3 import Goose
+
+import telegram
+from telegram import Message, MessageEntity, Update, ChatMember, constants
+from telegram.ext import CallbackContext, ContextTypes
+
+from usage_tracker import UsageTracker
+from openai import AsyncOpenAI
+
+
+def get_openai_client():
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise RuntimeError("❌ Thiếu biến môi trường OPENAI_API_KEY.")
+    return AsyncOpenAI(api_key=api_key)
+
+
+def extract_text_from_url(url: str) -> str:
+    try:
+        with Goose() as g:
+            article = g.extract(url=url)
+            return article.cleaned_text
+    except Exception as e:
+        return f"❌ Lỗi khi trích xuất nội dung: {e}"
+
+
+async def summarize_url(url: str, update: Update = None, context: CallbackContext = None) -> str:
+    """
+    Tóm tắt nội dung của một URL nếu bot được mention hoặc được reply trong nhóm.
+    """
+    if update and context:
+        if update.effective_chat.type in [constants.ChatType.GROUP, constants.ChatType.SUPERGROUP]:
+            bot_username = context.bot.username.lower()
+            message_text_lower = (update.message.text or "").lower()
+            is_mentioned = f"@{bot_username}" in message_text_lower
+            is_reply_to_bot = (
+                update.message.reply_to_message
+                and update.message.reply_to_message.from_user.id == context.bot.id
+            )
+            if not is_mentioned and not is_reply_to_bot:
+                return None
+
+    content = extract_text_from_url(url)
+    if not content or len(content.strip()) < 100:
+        return "E chưa tóm tắt được nội dung. Cho e xin link rõ ràng hơn ạ."
+
+    prompt = (
+        "Tóm tắt nội dung sau bằng tiếng Việt. Trình bày ngắn gọn, mỗi ý trên một dòng rõ ràng."
+        " Tránh viết đoạn văn dài.\n\n"
+        f"{content}"
+    )
+    try:
+        client = get_openai_client()
+        response = await client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.5,
+            max_tokens=500,
+        )
+        message = response.choices[0].message
+        if message and message.content:
+            return message.content.strip()
+        return "❌ Không lấy được nội dung từ OpenAI."
+    except Exception as e:
+        return f"❌ Lỗi khi gọi OpenAI: {e}"
+
+
 # (The rest of the file remains unchanged.)
 
 
