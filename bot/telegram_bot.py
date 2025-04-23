@@ -734,7 +734,7 @@ class ChatGPTTelegramBot:
             )
 
             if not is_mentioned and not is_reply_to_bot:
-                return  # Không mention và không reply bot thì bỏ qua
+                return ""  # <- thêm dòng này để không lỗi indent
 
             coin_keywords = ["giá"]
             is_coin_related = any(keyword in text for keyword in coin_keywords)
