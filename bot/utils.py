@@ -5,6 +5,7 @@ import json
 import logging
 import os
 import base64
+from goose3 import Goose
 
 import telegram
 from telegram import Message, MessageEntity, Update, ChatMember, constants
