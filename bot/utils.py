@@ -28,19 +28,16 @@ def extract_text_from_url(url: str) -> str:
     except Exception as e:
         return f"❌ Lỗi khi trích xuất nội dung: {e}"
 
-def summarize_url(url: str) -> str:
+async def summarize_url(url: str) -> str:
     content = extract_text_from_url(url)
     if not content or len(content.strip()) < 100:
         return "📄 Bot chưa tóm tắt được nội dung. Vui lòng cung cấp link rõ ràng hơn."
 
     prompt = (
-    "Hãy tóm tắt nội dung bài viết sau bằng tiếng Việt.\n"
-    "- Trình bày ngắn gọn, mỗi ý thành một dòng gạch đầu dòng.\n"
-    "- Tránh viết kiểu đoạn văn dài.\n"
-    "- Tập trung vào các ý chính, không thêm suy diễn.\n\n"
-    f"{content}"
+        "Tóm tắt nội dung sau bằng tiếng Việt. Trình bày ngắn gọn, mỗi ý trên một dòng rõ ràng."
+        " Tránh viết đoạn văn dài.\n\n"
+        f"{content}"
     )
-
     try:
         client = get_openai_client()
         response = client.chat.completions.create(
