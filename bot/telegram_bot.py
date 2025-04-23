@@ -98,7 +98,7 @@ class ChatGPTTelegramBot:
         self.usage = {}
         self.last_message = {}
         self.inline_queries_cache = {}
-    async def summarize_and_reply(self, update: Update):
+    async def summarize_and_reply(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """
         Tự động tóm tắt nội dung khi tin nhắn chứa 'tóm tắt' và URL.
         """
@@ -719,7 +719,7 @@ class ChatGPTTelegramBot:
         user_id = update.message.from_user.id
         prompt = message_text(update.message)
         text = update.message.text.lower()
-        if await self.summarize_and_reply(update):
+        if await self.summarize_and_reply(update, context):
             return  # đã xử lý tóm tắt thì không chạy tiếp
         if is_group_chat(update):
             bot_username = context.bot.username.lower()
