@@ -19,3 +19,4 @@ python-telegram-bot[rate-limiter]
 python-telegram-bot[rate-limiter]
 yfinance
 ta
+playwright
