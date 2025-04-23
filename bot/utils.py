@@ -32,7 +32,9 @@ def extract_text_from_url(url: str) -> str:
 
 
 async def summarize_url(url: str, update: Update = None, context: CallbackContext = None) -> str:
-    # Chỉ tóm tắt nếu bot được mention hoặc được reply trong group
+    """
+    Tóm tắt nội dung của một URL nếu bot được mention hoặc được reply trong nhóm.
+    """
     if update and context:
         if update.effective_chat.type in [constants.ChatType.GROUP, constants.ChatType.SUPERGROUP]:
             bot_username = context.bot.username.lower()
