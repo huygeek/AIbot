@@ -28,8 +28,6 @@ COPY . .
 # Install Python dependencies
 RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 
-# Install Playwright browsers
-RUN playwright install --with-deps
 
 # Run the bot
 CMD ["python", "bot/main.py"]
