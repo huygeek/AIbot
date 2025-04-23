@@ -5,7 +5,6 @@ import json
 import logging
 import os
 import base64
-import asyncio
 from goose3 import Goose
 
 import telegram
@@ -14,15 +13,13 @@ from telegram.ext import CallbackContext, ContextTypes
 
 from usage_tracker import UsageTracker
 from openai import AsyncOpenAI
-from playwright.async_api import async_playwright
-
+from playwright.async_api import async_playwright  # ✅ Thêm cho Playwright support
 
 def get_openai_client():
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         raise RuntimeError("❌ Thiếu biến môi trường OPENAI_API_KEY.")
     return AsyncOpenAI(api_key=api_key)
-
 
 def extract_text_from_url(url: str) -> str:
     try:
@@ -32,19 +29,20 @@ def extract_text_from_url(url: str) -> str:
     except Exception as e:
         return f"❌ Lỗi khi trích xuất nội dung: {e}"
 
-
+# ✅ Hàm fallback dùng Playwright nếu Goose fail
 async def fetch_page_with_playwright(url: str) -> str:
     try:
         async with async_playwright() as p:
-            browser = await p.chromium.launch()
-            page = await browser.new_page()
-            await page.goto(url, timeout=30000)
-            content = await page.content()
+            browser = await p.chromium.launch(headless=True)
+            context = await browser.new_context()
+            page = await context.new_page()
+            await page.goto(url, timeout=15000)
+            await page.wait_for_timeout(2000)
+            html = await page.content()
             await browser.close()
-            return content
+            return html
     except Exception as e:
-        return f"❌ Lỗi khi dùng Playwright: {e}"
-
+        return f"❌ Lỗi Playwright: {e}"
 
 async def summarize_url(url: str, update: Update = None, context: CallbackContext = None) -> str:
     """
@@ -64,11 +62,9 @@ async def summarize_url(url: str, update: Update = None, context: CallbackContex
 
     content = extract_text_from_url(url)
     if not content or len(content.strip()) < 100:
-        # Nếu Goose fail thì fallback dùng Playwright
-        content = await fetch_page_with_playwright(url)
-
-    if not content or len(content.strip()) < 100:
-        return "E chưa tóm tắt được nội dung. Cho e xin link rõ ràng hơn ạ."
+        content = await fetch_page_with_playwright(url)  # fallback nếu Goose fail
+        if not content or len(content.strip()) < 100:
+            return "E chưa tóm tắt được nội dung. Cho e xin link rõ ràng hơn ạ."
 
     prompt = (
         "Tóm tắt nội dung sau bằng tiếng Việt. Trình bày ngắn gọn, mỗi ý trên một dòng rõ ràng."
@@ -89,6 +85,9 @@ async def summarize_url(url: str, update: Update = None, context: CallbackContex
         return "❌ Không lấy được nội dung từ OpenAI."
     except Exception as e:
         return f"❌ Lỗi khi gọi OpenAI: {e}"
+
+
+# (The rest of the file remains unchanged.)
 
 
 # (The rest of the file remains unchanged.)
