@@ -39,4 +39,4 @@ RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 # Cài Chromium cho Playwright
 RUN python -m playwright install chromium
 
-CMD ["python", "bot/main.py"]
+CMD exec python bot/main.py
