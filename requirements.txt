@@ -1,6 +1,7 @@
 openai>=1.0.0
-playwright
+python-dotenv
 gtts
 pytube
 bs4
-python-dotenv
+playwright
+duckduckgo_search
