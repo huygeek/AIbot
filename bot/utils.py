@@ -75,6 +75,9 @@ async def summarize_url(url: str, update: Update = None, context: CallbackContex
         content = await fetch_page_with_playwright(url)  # fallback nếu Goose fail
         if not content or len(content.strip()) < 100:
             return "E chưa tóm tắt được nội dung. Cho e xin link rõ ràng hơn ạ."
+    
+    # Giới hạn nội dung ~6000 ký tự để tránh vượt context limit
+    trimmed_content = content[:6000]
 
     prompt = (
         "Tóm tắt nội dung sau bằng tiếng Việt, theo phong cách thân thiện như đang kể lại cho bạn bè.\n"
