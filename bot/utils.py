@@ -5,6 +5,7 @@ import json
 import logging
 import os
 import base64
+import asyncio  # ✅ THÊM DÒNG NÀY
 from goose3 import Goose
 
 import telegram
