@@ -42,7 +42,7 @@ async def summarize_url(url: str, update: Update = None, context: CallbackContex
                 and update.message.reply_to_message.from_user.id == context.bot.id
             )
             if not is_mentioned and not is_reply_to_bot:
-                return "📵 Bot chỉ tóm tắt khi được mention hoặc reply trong nhóm."
+                return 
 
     content = extract_text_from_url(url)
     if not content or len(content.strip()) < 100:
