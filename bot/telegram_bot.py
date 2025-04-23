@@ -98,7 +98,7 @@ class ChatGPTTelegramBot:
         self.usage = {}
         self.last_message = {}
         self.inline_queries_cache = {}
-    async def summarize_and_reply(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        async def summarize_and_reply(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """
         Tự động tóm tắt nội dung khi tin nhắn chứa 'tóm tắt' và URL.
         """
@@ -108,12 +108,12 @@ class ChatGPTTelegramBot:
         if "http" in text and "tóm tắt" in text:
             for word in prompt.split():
                 if word.startswith("http"):
+                    url = word  # ✅ Gán URL trước khi truyền vào
                     try:
                         await update.message.reply_chat_action(action=constants.ChatAction.TYPING)
                         summary = await summarize_url(url, update, context)
-                        if summary:  # Chỉ gửi nếu có nội dung thực sự
-                        await update.message.reply_text(summary[:4096])
-
+                        if summary:  # ✅ Chỉ gửi nếu có nội dung thực sự
+                            await update.message.reply_text(summary[:4096])
                     except Exception as e:
                         await update.message.reply_text(f"❌ Lỗi khi tóm tắt: {e}")
                     return True  # đã xử lý rồi
