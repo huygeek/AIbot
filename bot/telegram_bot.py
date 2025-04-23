@@ -8,7 +8,7 @@ import requests
 import yfinance as yf
 import ta
 
-
+from utils import summarize_url, fetch_page_with_playwright  # ✅ thêm hàm mới
 from uuid import uuid4
 from telegram import BotCommandScopeAllGroupChats, Update, constants
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton, InlineQueryResultArticle
