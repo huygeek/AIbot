@@ -34,6 +34,7 @@ async def summarize_url(url: str) -> str:
         return "📄 Bot chưa tóm tắt được nội dung. Vui lòng cung cấp link rõ ràng hơn."
 
     prompt = (
+        "Dạ a, để em tóm tắt *bài* *thread* này cho "
         "Tóm tắt nội dung sau bằng tiếng Việt. Trình bày ngắn gọn, mỗi ý trên một dòng rõ ràng."
         " Tránh viết đoạn văn dài.\n\n"
         f"{content}"
