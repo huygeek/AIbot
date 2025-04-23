@@ -45,7 +45,7 @@ async def summarize_url(url: str, update: Update = None, context: CallbackContex
                 and update.message.reply_to_message.from_user.id == context.bot.id
             )
             if not is_mentioned and not is_reply_to_bot:
-                return ""
+                return None
 
     content = extract_text_from_url(url)
     if not content or len(content.strip()) < 100:
@@ -59,17 +59,17 @@ async def summarize_url(url: str, update: Update = None, context: CallbackContex
     try:
         client = get_openai_client()
         response = await client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.5,
-        max_tokens=500,
-    )
-    
-    # ✅ Tách dòng sau khi `await`, và kiểm tra kỹ:
-    message = response.choices[0].message
-    if message and message.content:
-        return message.content.strip()
-    return "❌ Không lấy được nội dung từ OpenAI."
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.5,
+            max_tokens=500,
+        )
+        message = response.choices[0].message
+        if message and message.content:
+            return message.content.strip()
+        return "❌ Không lấy được nội dung từ OpenAI."
+    except Exception as e:
+        return f"❌ Lỗi khi gọi OpenAI: {e}"
 
 
 # (The rest of the file remains unchanged.)
