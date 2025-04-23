@@ -31,8 +31,7 @@ import requests
 import yfinance as yf
 import ta
 
-from utils import summarize_url  # đảm bảo đã import đúng ở đầu file
-
+from utils import summarize_url, fetch_page_with_playwright
 
 
 def find_coin_id_by_symbol(symbol):
