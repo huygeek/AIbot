@@ -3,6 +3,7 @@ FROM python:3.10-slim
 # Cài dependencies
 RUN apt-get update && apt-get install -y \
     curl \
+    bash \
     wget \
     bash \
     gnupg \
