@@ -1,12 +1,6 @@
-python-dotenv~=1.0.0
-pydub~=0.25.1
-tiktoken==0.7.0
-openai==1.58.1
-python-telegram-bot==21.9
-requests~=2.32.3
-tenacity==8.3.0
-Pillow~=11.0.0
-playwright==1.43.0
-yfinance
+openai>=1.0.0
+playwright
 gtts
-ta
+pytube
+bs4
+python-dotenv
