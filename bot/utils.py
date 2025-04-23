@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import asyncio
 import itertools
 import json
 import logging
 import os
 import base64
-from goose3 import Goose
 
+from goose3 import Goose
 import telegram
 from telegram import Message, MessageEntity, Update, ChatMember, constants
 from telegram.ext import CallbackContext, ContextTypes
@@ -14,16 +15,27 @@ from telegram.ext import CallbackContext, ContextTypes
 from usage_tracker import UsageTracker
 from openai import OpenAI
 
+
 def get_openai_client():
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         raise RuntimeError("❌ Thiếu biến môi trường OPENAI_API_KEY.")
     return OpenAI(api_key=api_key)
 
-from goose3 import Goose
 
-async def summarize_url(url: str) -> str:
-    content = extract_text_from_url(url)  # 🟢 gọi bình thường vì Goose3 không async
+# --- Extract content using Goose3 ---
+def extract_text_from_url(url: str) -> str:
+    try:
+        g = Goose()
+        article = g.extract(url=url)
+        return article.cleaned_text if article.cleaned_text else "❌ Không trích xuất được nội dung."
+    except Exception as e:
+        return f"❌ Lỗi khi trích xuất nội dung: {e}"
+
+
+# --- Summarize extracted content using OpenAI ---
+def summarize_url(url: str) -> str:
+    content = extract_text_from_url(url)
     if not content or len(content.strip()) < 100:
         return "📄 Bot chưa tóm tắt được nội dung. Hãy thử link khác hoặc chờ hệ thống ổn định nhé!"
 
@@ -38,28 +50,6 @@ async def summarize_url(url: str) -> str:
         return response.choices[0].message.content.strip()
     except Exception as e:
         return f"❌ Lỗi khi gọi OpenAI: {e}"
-
-
-
-# --- Summarize extracted content using OpenAI ---
-def summarize_url(url: str) -> str:
-    content = extract_text_from_url(url)
-    if not content or len(content.strip()) < 100:
-        return "📄 Bot chưa tóm tắt được nội dung. Vui lòng cung cấp link rõ ràng hơn."
-
-    prompt = f"Tóm tắt nội dung sau bằng tiếng Việt, rõ ràng và ngắn gọn:\n\n{content}"
-    try:
-        client = get_openai_client()
-        response = client.chat.completions.create(
-            model="gpt-4",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.5,
-            max_tokens=500
-        )
-        return response.choices[0].message.content.strip()
-    except Exception as e:
-        return f"❌ Lỗi khi gọi OpenAI: {e}"
-
 
 # (The rest of the file remains unchanged.)
 
