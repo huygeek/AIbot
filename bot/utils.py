@@ -167,11 +167,15 @@ async def summarize_url(url: str, update: Update = None, context: CallbackContex
             return "❌ Không lấy được nội dung từ trang. Gửi link rõ hơn giúp em!"
 
 
+        # Giới hạn nội dung ~6000 ký tự để tránh vượt context limit
+    trimmed_content = content[:6000]
+    
     prompt = (
         "Tóm tắt nội dung sau bằng tiếng Việt. Trình bày ngắn gọn, mỗi ý trên một dòng rõ ràng."
         " Tránh viết đoạn văn dài.\n\n"
-        f"{content}"
+        f"{trimmed_content}"
     )
+
     try:
         client = get_openai_client()
         response = await client.chat.completions.create(
