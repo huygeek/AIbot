@@ -99,28 +99,40 @@ class ChatGPTTelegramBot:
         self.inline_queries_cache = {}
 
     async def summarize_and_reply(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """
-        Tự động tóm tắt nội dung khi tin nhắn chứa 'tóm tắt' và URL,
-        và bot được mention hoặc bị reply trong nhóm.
-        """
-        prompt = message_text(update.message) or ""
-        text = prompt.lower()
-    
-        if "http" in text and "tóm tắt" in text:
-            url = next((word for word in prompt.split() if word.startswith("http")), None)
-            if url:
-                try:
-                    await update.message.reply_chat_action(action=constants.ChatAction.TYPING)
-                    summary = await summarize_url(url, update, context)
-                    if summary and isinstance(summary, str) and summary.strip():
-                        await update.message.reply_text(summary[:4096])
-                    return True
-                except Exception as e:
-                    await update.message.reply_text(f"❌ Lỗi khi tóm tắt: {e}")
-                    return True
-        return False
+    """
+    Tự động tóm tắt nội dung khi tin nhắn chứa 'tóm tắt' và URL,
+    và bot được mention hoặc bị reply trong nhóm.
+    """
+    prompt = message_text(update.message) or ""
+    text = prompt.lower()
 
+    if "http" in text and "tóm tắt" in text:
+        url = next((word for word in prompt.split() if word.startswith("http")), None)
 
+        # ✅ Nếu trong nhóm, phải @mention hoặc reply thì mới cho chạy
+        if update.effective_chat.type in [constants.ChatType.GROUP, constants.ChatType.SUPERGROUP]:
+            bot_username = context.bot.username.lower()
+            message_text_lower = text
+            is_mentioned = f"@{bot_username}" in message_text_lower
+            is_reply_to_bot = (
+                update.message.reply_to_message
+                and update.message.reply_to_message.from_user.id == context.bot.id
+            )
+            if not is_mentioned and not is_reply_to_bot:
+                return False  # 🚫 Không chạy nếu không mention hoặc reply
+
+        if url:
+            try:
+                await update.message.reply_chat_action(action=constants.ChatAction.TYPING)
+                summary = await summarize_url(url, update, context)
+                if summary and isinstance(summary, str) and summary.strip():
+                    await update.message.reply_text(summary[:4096])
+                return True
+            except Exception as e:
+                await update.message.reply_text(f"❌ Lỗi khi tóm tắt: {e}")
+                return True
+
+    return False
 
         
     async def help(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
