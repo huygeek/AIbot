@@ -113,8 +113,9 @@ class ChatGPTTelegramBot:
             try:
                 await update.message.reply_chat_action(action=constants.ChatAction.TYPING)
                 summary = await summarize_url(url, update, context)
-                if summary and isinstance(summary, str) and summary.strip():  # chỉ gửi nếu có nội dung thực sự
-                    await update.message.reply_text(summary[:4096])
+                if summary and isinstance(summary, str) and summary.strip():
+                    await update.message.reply_text(summary[:1000])
+
                 return True
             except Exception as e:
                 await update.message.reply_text(f"❌ Lỗi khi tóm tắt: {e}")
