@@ -79,13 +79,17 @@ async def summarize_url(url: str, update: Update = None, context: CallbackContex
         # Giới hạn nội dung ~6000 ký tự để tránh vượt context limit
         trimmed_content = content[:6000]
     
-        prompt = (
-            "Tóm tắt nội dung sau bằng tiếng Việt, theo phong cách thân thiện như đang kể lại cho bạn bè.\n"
-            "Mỗi ý viết trên một dòng, bắt đầu bằng biểu tượng ❖, chèn <br/> để xuống dòng.\n"
-            "Cuối cùng chốt lại bằng một câu kiểu như 'Đấy, ngắn gọn dễ hiểu chưa 😂. Em gửi nha sếp 😌' "
-            "hoặc 'Vậy nha anh yêu 🫶', tùy vibe nội dung.\n\n"
-            f"{trimmed_content}"
-        )
+            prompt = (
+                "Tóm tắt nội dung sau bằng tiếng Việt như kể lại cho bạn thân. "
+                "Mỗi ý viết trên một dòng, bắt đầu bằng ❖, xuống dòng dùng <br/>.\n"
+                "Ví dụ:\n"
+                "❖ Dự án này thuộc tuyến cao tốc Bắc Nam.<br/>\n"
+                "❖ Chiều dài 30 km, đi qua Hà Tĩnh.<br/>\n"
+                "❖ Tổng đầu tư 7.664 tỷ đồng.<br/>\n"
+                "Kết thúc bằng câu thân mật như 'Em gửi nha sếp 😌' hoặc 'Vậy nha anh yêu 🫶'\n\n"
+                f"{trimmed_content}"
+
+            )
     try:
         client = get_openai_client()
         response = await client.chat.completions.create(
