@@ -13,6 +13,7 @@ from telegram.ext import CallbackContext, ContextTypes
 
 from usage_tracker import UsageTracker
 from openai import AsyncOpenAI
+from playwright.async_api import async_playwright
 
 
 def get_openai_client():
@@ -29,6 +30,19 @@ def extract_text_from_url(url: str) -> str:
             return article.cleaned_text
     except Exception as e:
         return f"❌ Lỗi khi trích xuất nội dung: {e}"
+
+
+async def fetch_page_with_playwright(url: str) -> str:
+    try:
+        async with async_playwright() as p:
+            browser = await p.chromium.launch()
+            page = await browser.new_page()
+            await page.goto(url, timeout=30000)
+            content = await page.content()
+            await browser.close()
+            return content
+    except Exception as e:
+        return f"❌ Lỗi khi dùng Playwright: {e}"
 
 
 async def summarize_url(url: str, update: Update = None, context: CallbackContext = None) -> str:
@@ -48,6 +62,10 @@ async def summarize_url(url: str, update: Update = None, context: CallbackContex
                 return None
 
     content = extract_text_from_url(url)
+    if not content or len(content.strip()) < 100:
+        # Nếu Goose fail thì fallback dùng Playwright
+        content = await fetch_page_with_playwright(url)
+
     if not content or len(content.strip()) < 100:
         return "E chưa tóm tắt được nội dung. Cho e xin link rõ ràng hơn ạ."
 
@@ -73,7 +91,6 @@ async def summarize_url(url: str, update: Update = None, context: CallbackContex
 
 
 # (The rest of the file remains unchanged.)
-
 
 
 # (The rest of the file remains un
