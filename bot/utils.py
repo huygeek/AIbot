@@ -6,7 +6,6 @@ import logging
 import os
 import base64
 from goose3 import Goose
-from playwright.async_api import async_playwright
 
 import telegram
 from telegram import Message, MessageEntity, Update, ChatMember, constants
@@ -15,45 +14,21 @@ from telegram.ext import CallbackContext, ContextTypes
 from usage_tracker import UsageTracker
 from openai import AsyncOpenAI
 
+
 def get_openai_client():
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         raise RuntimeError("❌ Thiếu biến môi trường OPENAI_API_KEY.")
     return AsyncOpenAI(api_key=api_key)
 
-from playwright.async_api import async_playwright  # thêm ở đầu file
 
-async def fetch_page_with_playwright(url: str) -> str:
+def extract_text_from_url(url: str) -> str:
     try:
-        async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=True)
-            page = await browser.new_page()
-            await page.goto(url, timeout=20000)
-            html = await page.content()
-            await browser.close()
-            return html
+        with Goose() as g:
+            article = g.extract(url=url)
+            return article.cleaned_text
     except Exception as e:
-        return f"❌ Lỗi Playwright: {e}"
-
-
-async def extract_text_from_url(url: str) -> str:
-    try:
-        async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=True)
-            page = await browser.new_page()
-            await page.goto(url, timeout=15000)
-            content = await page.content()
-            text = await page.inner_text("body")
-            await browser.close()
-            return text
-    except Exception as e:
-        # fallback dùng Goose nếu Playwright lỗi
-        try:
-            with Goose() as g:
-                article = g.extract(url=url)
-                return article.cleaned_text
-        except:
-            return f"❌ Lỗi khi trích xuất nội dung: {e}"
+        return f"❌ Lỗi khi trích xuất nội dung: {e}"
 
 
 async def summarize_url(url: str, update: Update = None, context: CallbackContext = None) -> str:
@@ -72,7 +47,7 @@ async def summarize_url(url: str, update: Update = None, context: CallbackContex
             if not is_mentioned and not is_reply_to_bot:
                 return None
 
-    content = await extract_text_from_url(url)
+    content = extract_text_from_url(url)
     if not content or len(content.strip()) < 100:
         return "E chưa tóm tắt được nội dung. Cho e xin link rõ ràng hơn ạ."
 
@@ -95,6 +70,10 @@ async def summarize_url(url: str, update: Update = None, context: CallbackContex
         return "❌ Không lấy được nội dung từ OpenAI."
     except Exception as e:
         return f"❌ Lỗi khi gọi OpenAI: {e}"
+
+
+# (The rest of the file remains unchanged.)
+
 
 
 # (The rest of the file remains un
