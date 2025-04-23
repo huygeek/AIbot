@@ -30,3 +30,6 @@ RUN playwright install --with-deps
 
 # Chạy bot
 CMD ["python", "bot/main.py"]
+
+RUN apk add --no-cache bash
+
