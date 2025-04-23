@@ -20,19 +20,25 @@ def get_openai_client():
         raise RuntimeError("❌ Thiếu biến môi trường OPENAI_API_KEY.")
     return OpenAI(api_key=api_key)
 
-# --- Extract content using Playwright ---
 from goose3 import Goose
 
-def extract_text_from_url(url: str) -> str:
-    """
-    Trích xuất nội dung chính từ trang web (dạng NLP, không cần trình duyệt).
-    """
+async def summarize_url(url: str) -> str:
+    content = extract_text_from_url(url)  # 🟢 gọi bình thường vì Goose3 không async
+    if not content or len(content.strip()) < 100:
+        return "📄 Bot chưa tóm tắt được nội dung. Hãy thử link khác hoặc chờ hệ thống ổn định nhé!"
+
     try:
-        g = Goose()
-        article = g.extract(url=url)
-        return article.cleaned_text.strip() or "❌ Không tìm được nội dung để tóm tắt."
+        client = get_openai_client()
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": f"Tóm tắt nội dung sau bằng tiếng Việt:\n\n{content}"}],
+            temperature=0.5,
+            max_tokens=500,
+        )
+        return response.choices[0].message.content.strip()
     except Exception as e:
-        return f"❌ Lỗi khi trích xuất nội dung: {e}"
+        return f"❌ Lỗi khi gọi OpenAI: {e}"
+
 
 
 # --- Summarize extracted content using OpenAI ---
