@@ -5,7 +5,6 @@ import json
 import logging
 import os
 import base64
-import asyncio
 from goose3 import Goose
 
 import telegram
@@ -34,11 +33,20 @@ def extract_text_from_url(url: str) -> str:
 async def fetch_page_with_playwright(url: str) -> str:
     try:
         async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=True)
-            context = await browser.new_context()
+            browser = await p.chromium.launch(headless=True, args=[
+                "--no-sandbox",
+                "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-gpu",
+                "--no-zygote",
+                "--disable-software-rasterizer"
+            ])
+            context = await browser.new_context(
+                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.5993.90 Safari/537.36"
+            )
             page = await context.new_page()
-            await page.goto(url, timeout=15000)
-            await page.wait_for_timeout(2000)
+            await page.goto(url, timeout=20000)
+            await page.wait_for_timeout(3000)
             html = await page.content()
             await browser.close()
             return html
@@ -86,6 +94,10 @@ async def summarize_url(url: str, update: Update = None, context: CallbackContex
         return "❌ Không lấy được nội dung từ OpenAI."
     except Exception as e:
         return f"❌ Lỗi khi gọi OpenAI: {e}"
+
+
+# (The rest of the file remains unchanged.)
+
 
 
 # (The rest of the file remains unchanged.)
