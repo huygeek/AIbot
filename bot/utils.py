@@ -21,6 +21,20 @@ def get_openai_client():
         raise RuntimeError("❌ Thiếu biến môi trường OPENAI_API_KEY.")
     return AsyncOpenAI(api_key=api_key)
 
+from playwright.async_api import async_playwright  # thêm ở đầu file
+
+async def fetch_page_with_playwright(url: str) -> str:
+    try:
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=True)
+            page = await browser.new_page()
+            await page.goto(url, timeout=20000)
+            html = await page.content()
+            await browser.close()
+            return html
+    except Exception as e:
+        return f"❌ Lỗi Playwright: {e}"
+
 
 async def extract_text_from_url(url: str) -> str:
     try:
@@ -137,7 +151,11 @@ async def summarize_url(url: str, update: Update = None, context: CallbackContex
 
     content = extract_text_from_url(url)
     if not content or len(content.strip()) < 100:
-        return "E chưa tóm tắt được nội dung. Cho e xin link rõ ràng hơn ạ."
+        # ✅ Nếu Goose fail thì dùng Playwright
+        content = await fetch_page_with_playwright(url)
+        if not content or len(content.strip()) < 100:
+            return "❌ Không lấy được nội dung từ trang. Gửi link rõ hơn giúp em!"
+
 
     prompt = (
         "Tóm tắt nội dung sau bằng tiếng Việt. Trình bày ngắn gọn, mỗi ý trên một dòng rõ ràng."
