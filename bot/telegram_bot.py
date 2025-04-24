@@ -7,6 +7,11 @@ import io
 import requests
 import yfinance as yf
 import ta
+from openai import AsyncOpenAI
+from bot.plugin.weather import get_weather  # ✅ đúng path
+import os
+
+openai_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 from utils import summarize_url, fetch_page_with_playwright  # ✅ thêm hàm mới
 from uuid import uuid4
@@ -33,6 +38,20 @@ import ta
 
 from utils import summarize_url, fetch_page_with_playwright  # ✅ thêm hàm mới
 
+async def is_weather_related(text: str) -> bool:
+    prompt = (
+        f"Người dùng nói: \"{text}\"\n"
+        f"Câu này có đang nói về thời tiết không? Trả lời duy nhất 'có' hoặc 'không'."
+    )
+    try:
+        response = await openai_client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=3,
+        )
+        return "có" in response.choices[0].message.content.lower()
+    except:
+        return False
 
 def find_coin_id_by_symbol(symbol):
     try:
@@ -728,6 +747,14 @@ class ChatGPTTelegramBot:
         user_id = update.message.from_user.id
         prompt = message_text(update.message)
         text = update.message.text.lower()
+        # ⛅️ Tự động phản hồi thời tiết cho Hà Nội và TP.HCM
+        if await is_weather_related(prompt):
+            hn = get_weather("Hà Nội")
+            hcm = get_weather("TP.HCM")
+            reply = f"{hn}\n\n{hcm}\nChúc bạn một ngày dễ chịu ở bất kỳ đâu 😌"
+            await update.message.reply_text(reply)
+            return
+
         if await self.summarize_and_reply(update, context):
             return  # đã xử lý tóm tắt thì không chạy tiếp
         if is_group_chat(update):
