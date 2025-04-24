@@ -25,7 +25,6 @@ class PluginManager:
         enabled_plugins = config.get('plugins', [])
         plugin_mapping = {
             'wolfram': WolframAlphaPlugin,
-            'weather': WeatherPlugin,
             'crypto': CryptoPlugin,
             'ddg_web_search': DDGWebSearchPlugin,
             'ddg_image_search': DDGImageSearchPlugin,
