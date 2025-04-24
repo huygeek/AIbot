@@ -142,11 +142,6 @@ class ChatGPTTelegramBot:
                 commands = self.group_commands if is_group_chat(update) else self.commands
                 commands_description = [f'/{command.command} - {command.description}' for command in commands]
                 bot_language = self.config['bot_language']
-                help_text = (
-                        localized_text('help_text', bot_language)[0] +
-                        '\n\n' +
-                        '\n'.join(commands_description)
-                )
                 await update.message.reply_text(help_text, disable_web_page_preview=True)
 
     async def stats(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -1171,12 +1166,12 @@ class ChatGPTTelegramBot:
             .build()
 
         application.add_handler(CommandHandler('reset', self.reset))
-        application.add_handler(CommandHandler('help', self.help))
-        application.add_handler(CommandHandler('image', self.image))
-        application.add_handler(CommandHandler('tts', self.tts))
+        #application.add_handler(CommandHandler('help', self.help))
+        #application.add_handler(CommandHandler('image', self.image))
+        #application.add_handler(CommandHandler('tts', self.tts))
         application.add_handler(CommandHandler('start', self.help))
-        application.add_handler(CommandHandler('stats', self.stats))
-        application.add_handler(CommandHandler('resend', self.resend))
+        #application.add_handler(CommandHandler('stats', self.stats))
+        #application.add_handler(CommandHandler('resend', self.resend))
         application.add_handler(CommandHandler(
             'chat', self.prompt, filters=filters.ChatType.GROUP | filters.ChatType.SUPERGROUP)
         )
