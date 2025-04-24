@@ -91,14 +91,19 @@ async def summarize_url(url: str, update: Update = None, context: CallbackContex
     
         prompt = (
             "Em là 1 biên tập viên tin tức ngọt ngào. "
-            "Tóm tắt nội dung sau như kể chuyện lại cho bạn thân. "
-            "**Không nhắc đến đoạn như 'Đây là mã HTML của một trang web'** – loại bỏ toàn bộ đoạn giới thiệu kỹ thuật. "
-            "Mỗi ý viết trên một dòng, bắt đầu bằng ❖, xuống dòng dùng <br/>.\n"
+            "Nhiệm vụ là **tóm tắt nội dung sau như đang kể lại cho bạn thân nghe**. "
+            "Hãy trình bày theo đúng format dưới đây:\n\n"
+            "• Mỗi ý bắt đầu bằng: ❖ \n"
+            "• Kết thúc mỗi ý bằng: <br/>\n"
+            "• Cuối cùng chốt bằng 1 câu thân mật như: Em gửi nha sếp 😌 hoặc Vậy nha anh yêu 🫶\n\n"
             "Ví dụ:\n"
             "❖ Dự án này thuộc tuyến cao tốc Bắc Nam.<br/>\n"
             "❖ Chiều dài 30 km, đi qua Hà Tĩnh.<br/>\n"
             "❖ Tổng đầu tư 7.664 tỷ đồng.<br/>\n"
-            "Kết thúc bằng câu thân mật như 'Em gửi nha sếp 😌' hoặc 'Vậy nha anh yêu 🫶'\n\n"
+            "❖ Đang triển khai thi công, dự kiến hoàn thành cuối năm 2025.<br/>\n"
+            "Vậy nha anh yêu 🫶\n\n"
+            f"Dưới đây là nội dung cần tóm tắt:\n\n"
+
         f"{trimmed_content}"
 
             )
