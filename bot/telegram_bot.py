@@ -8,8 +8,10 @@ import requests
 import yfinance as yf
 import ta
 from openai import AsyncOpenAI
-from bot.plugin.weather import get_weather, get_forecast
+import sys
 import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from plugin.weather import get_weather, get_forecast
 
 openai_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
