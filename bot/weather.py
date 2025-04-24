@@ -10,7 +10,7 @@ def normalize_text(text: str) -> str:
 
 def normalize_city(city_name: str) -> str:
     norm = city_name.lower().strip().replace(".", "").replace("-", "").replace("_", "").replace("  ", "")
-    
+
     if "hanoi" in norm:
         return "Hanoi"
     elif any(x in norm for x in ["hochiminh", "tphcm", "saigon", "ho chi minh", "tp hcm"]):
@@ -25,7 +25,7 @@ def get_forecast(city_name: str = "Hà Nội") -> str:
 
     # B1: Normalize tên thành phố
     norm = city_name.lower().strip().replace(".", "").replace("-", "").replace("_", "").replace("  ", "")
-    
+
     # B2: Dùng toạ độ nếu là Hà Nội hoặc TP.HCM
     if "hanoi" in norm:
         city_query = "lat=21.0285&lon=105.8542"
@@ -77,7 +77,7 @@ def get_weather(city_name: str = "Hà Nội") -> str:
 
     # Normalize tên thành phố
     norm = city_name.lower().strip().replace(".", "").replace("-", "").replace("_", "").replace("  ", "")
-    
+
     # Sử dụng toạ độ cho các thành phố hay lỗi
     if "hanoi" in norm:
         city_query = "lat=21.0285&lon=105.8542"
@@ -106,4 +106,3 @@ def get_weather(city_name: str = "Hà Nội") -> str:
         )
     except Exception as e:
         return f"❌ Lỗi lấy thời tiết: {e}"
-
