@@ -8,7 +8,7 @@ import requests
 import yfinance as yf
 import ta
 from openai import AsyncOpenAI
-from bot.plugin.weather import get_weather  # ✅ đúng path
+from bot.plugin.weather import get_weather, get_forecast
 import os
 
 openai_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -747,7 +747,7 @@ class ChatGPTTelegramBot:
         user_id = update.message.from_user.id
         prompt = message_text(update.message)
         text = update.message.text.lower()
-        # ⛅️ Tự động phản hồi thời tiết cho Hà Nội và TP.HCM
+        # ⛅️ Tự động phản hồi thời tiết Hà Nội và TP.HCM nếu người dùng nhắc đến thời tiết
         if await is_weather_related(prompt):
             weather_hn = get_weather("Hà Nội")
             weather_hcm = get_weather("TP.HCM")
