@@ -8,7 +8,7 @@ import requests
 import yfinance as yf
 import ta
 from openai import AsyncOpenAI
-from bot.plugin.weather import get_weather, get_forecast
+from plugin.weather import get_weather, get_forecast
 import os
 
 openai_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
