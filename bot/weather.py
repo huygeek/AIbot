@@ -9,15 +9,14 @@ def normalize_text(text: str) -> str:
     return ''.join(e for e in text if e.isalnum() or e.isspace()).strip()
 
 def normalize_city(city_name: str) -> str:
-    norm = normalize_text(city_name)
-    norm = city.lower().strip().replace(".", "").replace("-", "").replace("_", "").replace("  ", "")
+    norm = city_name.lower().strip().replace(".", "").replace("-", "").replace("_", "").replace("  ", "")
     
     if "hanoi" in norm:
         return "Hanoi"
     elif any(x in norm for x in ["hochiminh", "tphcm", "saigon", "ho chi minh", "tp hcm"]):
         return "Ho Chi Minh City"
     else:
-        return city
+        return city_name
 
 
 def get_forecast(city_name: str = "Hà Nội") -> str:
