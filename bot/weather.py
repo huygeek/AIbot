@@ -10,11 +10,15 @@ def normalize_text(text: str) -> str:
 
 def normalize_city(city_name: str) -> str:
     norm = normalize_text(city_name)
+    norm = city.lower().strip().replace(".", "").replace("-", "").replace("_", "").replace("  ", "")
+    
     if "hanoi" in norm:
         return "Hanoi"
     elif any(x in norm for x in ["hochiminh", "tphcm", "saigon", "ho chi minh", "tp hcm"]):
         return "Ho Chi Minh City"
-    return city_name
+    else:
+        return city
+
 
 def get_forecast(city_name: str = "Hà Nội") -> str:
     city_name = normalize_city(city_name)
