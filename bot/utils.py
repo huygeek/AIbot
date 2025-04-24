@@ -15,6 +15,7 @@ from telegram.ext import CallbackContext, ContextTypes
 from usage_tracker import UsageTracker
 from openai import AsyncOpenAI
 from playwright.async_api import async_playwright  # ✅ Thêm cho Playwright support
+from bs4 import BeautifulSoup
 
 def get_openai_client():
     api_key = os.getenv("OPENAI_API_KEY")
@@ -53,6 +54,15 @@ async def fetch_page_with_playwright(url: str) -> str:
             return html
     except Exception as e:
         return f"❌ Lỗi Playwright: {e}"
+
+def extract_text_from_html(html: str) -> str:
+    soup = BeautifulSoup(html, "html.parser")
+
+    # Loại bỏ script, style
+    for tag in soup(["script", "style"]):
+        tag.decompose()
+
+    return soup.get_text(separator="\n")  # Trả về văn bản sạch, có xuống dòng
 
 async def summarize_url(url: str, update: Update = None, context: CallbackContext = None) -> str:
     """
@@ -172,11 +182,17 @@ async def summarize_url(url: str, update: Update = None, context: CallbackContex
 
     content = extract_text_from_url(url)
     if not content or len(content.strip()) < 100:
-        # ✅ Nếu Goose fail thì dùng Playwright
-        content = await fetch_page_with_playwright(url)
-        if not content or len(content.strip()) < 100:
+        html = await fetch_page_with_playwright(url)
+        if not html or len(html.strip()) < 100:
             return "❌ Không lấy được nội dung từ trang. Gửi link rõ hơn giúp em!"
 
+        # 🧼 Parse HTML thành text sạch
+        content = extract_text_from_html(html)
+
+    # 🧹 Loại bỏ dòng đầu nếu là "Đây là mã HTML..."
+    lines = content.strip().split("\n")
+    if lines and lines[0].lower().startswith("đây là mã html"):
+        content = "\n".join(lines[1:])
 
         # Giới hạn nội dung ~6000 ký tự để tránh vượt context limit
     trimmed_content = content[:6000]
