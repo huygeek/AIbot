@@ -135,7 +135,8 @@ class ChatGPTTelegramBot:
         return False
 
 
-    
+    async def help(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await update.message.reply_text("Tiên đã sẵn sàng hỗ trợ. Hỏi gì cũng được nè 😎")
 
     async def stats(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """
