@@ -211,7 +211,7 @@ async def summarize_url(url: str, update: Update = None, context: CallbackContex
     try:
         client = get_openai_client()
         response = await client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.5,
             max_tokens=500,
