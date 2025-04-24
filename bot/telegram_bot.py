@@ -135,8 +135,23 @@ class ChatGPTTelegramBot:
         return False
 
 
-    async def help(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text("Tiên đã sẵn sàng hỗ trợ. Hỏi gì cũng được nè 😎")
+    async def help(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
+                """
+                Shows the help menu.
+                """
+                commands = self.group_commands if is_group_chat(update) else self.commands
+                commands_description = [f'/{command.command} - {command.description}' for command in commands]
+                bot_language = self.config['bot_language']
+                help_text = (
+                        localized_text('help_text', bot_language)[0] +
+                        '\n\n' +
+                        '\n'.join(commands_description) +
+                        '\n\n' +
+                        localized_text('help_text', bot_language)[1] +
+                        '\n\n' +
+                        localized_text('help_text', bot_language)[2]
+                )
+                await update.message.reply_text(help_text, disable_web_page_preview=True)
 
     async def stats(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """
