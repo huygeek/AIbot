@@ -43,11 +43,9 @@ def get_forecast(city_name: str = "Hà Nội") -> str:
                     "humidity": item["main"]["humidity"]
                 }
 
-        result = f"📅 Dự báo thời tiết tại {city_name}:
-"
+        result = f"📅 Dự báo thời tiết tại {city_name}:\n"
         for i, (day, data) in enumerate(list(daily.items())[:5]):
-            result += f"- {day}: {data['icon']} {round(data['temps'][1])}°C / {round(data['temps'][0])}°C – {data['desc'].capitalize()}, độ ẩm {data['humidity']}%
-"
+            result += f"- {day}: {data['icon']} {round(data['temps'][1])}°C / {round(data['temps'][0])}°C – {data['desc'].capitalize()}, độ ẩm {data['humidity']}%\n"
 
         return result.strip()
     except Exception as e:
@@ -75,14 +73,10 @@ def get_weather(city_name: str = "Hà Nội") -> str:
 
         main, weather, wind = res["main"], res["weather"][0], res["wind"]
         return (
-            f"{weather_icon(weather['main'])} Thời tiết tại {city_name}:
-"
-            f"- Nhiệt độ: {main['temp']}°C
-"
-            f"- Trạng thái: {weather['description'].capitalize()}
-"
-            f"- Độ ẩm: {main['humidity']}%
-"
+            f"{weather_icon(weather['main'])} Thời tiết tại {city_name}:\n"
+            f"- Nhiệt độ: {main['temp']}°C\n"
+            f"- Trạng thái: {weather['description'].capitalize()}\n"
+            f"- Độ ẩm: {main['humidity']}%\n"
             f"- Gió: {wind['speed']} km/h"
         )
     except Exception as e:
