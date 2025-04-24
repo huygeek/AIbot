@@ -7,7 +7,6 @@ from plugins.youtube_audio_extractor import YouTubeAudioExtractorPlugin
 from plugins.ddg_image_search import DDGImageSearchPlugin
 from plugins.spotify import SpotifyPlugin
 from plugins.crypto import CryptoPlugin
-from plugins.weather import WeatherPlugin
 from plugins.ddg_web_search import DDGWebSearchPlugin
 from plugins.wolfram_alpha import WolframAlphaPlugin
 from plugins.deepl import DeeplTranslatePlugin
