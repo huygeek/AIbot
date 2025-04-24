@@ -41,7 +41,7 @@ from utils import summarize_url, fetch_page_with_playwright  # ✅ thêm hàm m�
 async def is_weather_related(text: str) -> bool:
     prompt = (
         f"Người dùng nói: \"{text}\"\n"
-        f"Câu này có đang nói về thời tiết không? Trả lời duy nhất 'có' hoặc 'không'."
+        f"Câu này có đang nói về thời tiết hoặc dự báo không? Trả lời duy nhất 'có' hoặc 'không'."
     )
     try:
         response = await openai_client.chat.completions.create(
@@ -749,11 +749,19 @@ class ChatGPTTelegramBot:
         text = update.message.text.lower()
         # ⛅️ Tự động phản hồi thời tiết cho Hà Nội và TP.HCM
         if await is_weather_related(prompt):
-            hn = get_weather("Hà Nội")
-            hcm = get_weather("TP.HCM")
-            reply = f"{hn}\n\n{hcm}\nChúc bạn một ngày dễ chịu ở bất kỳ đâu 😌"
-            await update.message.reply_text(reply)
+            weather_hn = get_weather("Hà Nội")
+            weather_hcm = get_weather("TP.HCM")
+            forecast_hn = get_forecast("Hà Nội")
+            forecast_hcm = get_forecast("TP.HCM")
+        
+            full_reply = (
+                f"{weather_hn}\n\n{weather_hcm}\n\n"
+                f"{forecast_hn}\n\n{forecast_hcm}\n\n"
+                f"🧭 Nhớ mặc đồ phù hợp nha sếp 😌"
+            )
+            await update.message.reply_text(full_reply[:4096])
             return
+
 
         if await self.summarize_and_reply(update, context):
             return  # đã xử lý tóm tắt thì không chạy tiếp
