@@ -1,8 +1,23 @@
 import os
 import requests
 import datetime
+import unicodedata
+
+def normalize_text(text: str) -> str:
+    # Bỏ dấu, thường hóa, loại ký tự lạ
+    text = unicodedata.normalize('NFD', text).encode('ascii', 'ignore').decode('utf-8').lower()
+    return ''.join(e for e in text if e.isalnum() or e.isspace()).strip()
+
+def normalize_city(city_name: str) -> str:
+    norm = normalize_text(city_name)
+    if "hanoi" in norm:
+        return "Hanoi"
+    elif any(x in norm for x in ["hochiminh", "tphcm", "saigon", "ho chi minh", "tp hcm"]):
+        return "Ho Chi Minh City"
+    return city_name
 
 def get_forecast(city_name: str = "Hà Nội") -> str:
+    city_name = normalize_city(city_name)
     api_key = os.getenv("OPENWEATHER_API_KEY")
     if not api_key:
         return "❌ Thiếu API Key thời tiết."
@@ -41,6 +56,7 @@ def weather_icon(condition: str) -> str:
     return icons.get(condition, "🌡️")
 
 def get_weather(city_name: str = "Hà Nội") -> str:
+    city_name = normalize_city(city_name)
     api_key = os.getenv("OPENWEATHER_API_KEY")
     if not api_key:
         return "❌ Thiếu API Key thời tiết."
