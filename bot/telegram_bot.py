@@ -40,25 +40,38 @@ from utils import summarize_url, fetch_page_with_playwright  # ✅ thêm hàm m�
 
 
 # --- Check @mention hoặc reply to bot trong group
-async def should_respond(update, context) -> bool:
+async def should_respond_weather(update, context) -> bool:
+    """
+    ✅ Chỉ trả lời nếu:
+    - Ở trong group AND
+    - Bị @mention hoặc reply
+    - Và câu hỏi có nhắc đến thời tiết
+    """
     if update.effective_chat.type in [constants.ChatType.GROUP, constants.ChatType.SUPERGROUP]:
         bot_username = context.bot.username.lower()
         text_lower = (update.message.text or "").lower()
+        
         is_mentioned = f"@{bot_username}" in text_lower
         is_reply_to_bot = (
             update.message.reply_to_message
             and update.message.reply_to_message.from_user.id == context.bot.id
         )
+
         if not is_mentioned and not is_reply_to_bot:
-            return False
-    return True
+            return False  # Không trả lời nếu không mention hoặc reply
+
+        # Nếu đã mention hoặc reply → Kiểm tra nội dung có nhắc thời tiết không
+        if not await is_weather_related(text_lower):
+            return False  # Không nhắc thời tiết → không trả lời
+
+    return True  # Nếu qua hết các điều kiện → trả lời
 
 # --- Detect xem có nhắc đến thời tiết không
 async def is_weather_related(text: str) -> bool:
     prompt = (
-        f"User nói: \"{text}\"\n"
-        f"Câu này có phải đang hỏi hoặc đề cập về thời tiết không? "
-        f"Trả lời duy nhất 'có' hoặc 'không'."
+        f"Người dùng nói: \"{text}\"\n"
+        f"Câu này có đang hỏi hoặc đề cập đến thời tiết không? "
+        f"Trả lời duy nhất bằng chữ 'có' hoặc 'không'."
     )
     try:
         response = await openai_client.chat.completions.create(
@@ -71,6 +84,7 @@ async def is_weather_related(text: str) -> bool:
         return "có" in answer
     except Exception:
         return False
+
 
 def find_coin_id_by_symbol(symbol):
     try:
