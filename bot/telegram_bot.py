@@ -38,19 +38,38 @@ import ta
 
 from utils import summarize_url, fetch_page_with_playwright  # ✅ thêm hàm mới
 
+
+# --- Check @mention hoặc reply to bot trong group
+async def should_respond(update, context) -> bool:
+    if update.effective_chat.type in [constants.ChatType.GROUP, constants.ChatType.SUPERGROUP]:
+        bot_username = context.bot.username.lower()
+        text_lower = (update.message.text or "").lower()
+        is_mentioned = f"@{bot_username}" in text_lower
+        is_reply_to_bot = (
+            update.message.reply_to_message
+            and update.message.reply_to_message.from_user.id == context.bot.id
+        )
+        if not is_mentioned and not is_reply_to_bot:
+            return False
+    return True
+
+# --- Detect xem có nhắc đến thời tiết không
 async def is_weather_related(text: str) -> bool:
     prompt = (
-        f"Người dùng nói: \"{text}\"\n"
-        f"Câu này có đang nói về đúng chữ thời tiết không? Trả lời duy nhất 'có' hoặc 'không'."
+        f"User nói: \"{text}\"\n"
+        f"Câu này có phải đang hỏi hoặc đề cập về thời tiết không? "
+        f"Trả lời duy nhất 'có' hoặc 'không'."
     )
     try:
         response = await openai_client.chat.completions.create(
             model="gpt-4",
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=3,
+            max_tokens=5,
+            temperature=0.0,
         )
-        return "có" in response.choices[0].message.content.lower()
-    except:
+        answer = response.choices[0].message.content.strip().lower()
+        return "có" in answer
+    except Exception:
         return False
 
 def find_coin_id_by_symbol(symbol):
