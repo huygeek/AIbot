@@ -39,13 +39,34 @@ import ta
 from utils import summarize_url, fetch_page_with_playwright  # ✅ thêm hàm mới
 
 
-# --- Check @mention hoặc reply to bot trong group + keyword match cực nhanh
-async def should_respond_weather(update, context) -> bool:
+
+async def extract_city_from_text(text: str) -> str:
     """
-    ✅ Chỉ trả lời nếu:
-    - Group chat
-    - @mention hoặc reply to bot
-    - Nội dung chứa "thời tiết" hoặc "dự báo"
+    ✅ Dùng GPT để phân tích text và trích xuất city.
+    Nếu không có city rõ ràng → trả về chuỗi rỗng "".
+    """
+    prompt = (
+        f"Người dùng hỏi: \"{text}\"\n\n"
+        "Trong câu trên, nếu có nhắc đến tên một thành phố hoặc tỉnh thành ở Việt Nam, "
+        "hãy trả lại đúng tên thành phố đó (chỉ 1 từ, không giải thích gì thêm).\n"
+        "Nếu không rõ hoặc không có địa danh, chỉ trả về \"\" (chuỗi rỗng)."
+    )
+    try:
+        response = await openai_client.chat.completions.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=10,
+            temperature=0.0,
+        )
+        city = response.choices[0].message.content.strip()
+        return city
+    except Exception:
+        return ""
+async def should_respond_weather(update, context) -> Union[bool, str]:
+    """
+    ✅ Trả về:
+    - False: nếu không đủ điều kiện
+    - City string: nếu đủ điều kiện
     """
     text = (update.message.text or "").lower()
 
@@ -61,13 +82,15 @@ async def should_respond_weather(update, context) -> bool:
         if not (is_mentioned or is_reply_to_bot):
             return False  # 🚫 Không mention cũng không reply → không xử lý
 
-        # ✅ Nếu đã mention hoặc reply → Check keyword
-        if "thời tiết" in text or "dự báo" in text:
-            return True
-        else:
-            return False
+        if "thời tiết" not in text and "dự báo" not in text:
+            return False  # 🚫 Không nói về thời tiết → không xử lý
 
-    return False  # 🚫 Không phải group → không xử lý
+    # --- Nếu qua hết => Gọi GPT extract city
+    city = await extract_city_from_text(update.message.text)
+
+    # Nếu không rõ city → fallback mặc định Hồ Chí Minh
+    return city if city else "hồ chí minh"
+
 
 
 
@@ -775,20 +798,6 @@ class ChatGPTTelegramBot:
         user_id = update.message.from_user.id
         prompt = message_text(update.message)
         text = update.message.text.lower()
-        # ⛅️ Tự động phản hồi thời tiết Hà Nội và TP.HCM nếu người dùng nhắc đến thời tiết
-        if await is_weather_related(prompt):
-            weather_hn = get_weather("Hà Nội")
-            weather_hcm = get_weather("TP.HCM")
-            forecast_hn = get_forecast("Hà Nội")
-            forecast_hcm = get_forecast("TP.HCM")
-        
-            full_reply = (
-                f"{weather_hn}\n\n{weather_hcm}\n\n"
-                f"{forecast_hn}\n\n{forecast_hcm}\n\n"
-                f"🧭 Nhớ mặc đồ phù hợp nha sếp 😌"
-            )
-            await update.message.reply_text(full_reply[:4096])
-            return
 
 
         if await self.summarize_and_reply(update, context):
