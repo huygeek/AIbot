@@ -39,62 +39,35 @@ import ta
 from utils import summarize_url, fetch_page_with_playwright  # ✅ thêm hàm mới
 
 
-# --- Check @mention hoặc reply to bot trong group
+# --- Check @mention hoặc reply to bot trong group + keyword match cực nhanh
 async def should_respond_weather(update, context) -> bool:
     """
     ✅ Chỉ trả lời nếu:
-    - Ở trong group AND
-    - Bị @mention hoặc reply
-    - Và nội dung có nhắc về thời tiết
+    - Group chat
+    - @mention hoặc reply to bot
+    - Nội dung chứa "thời tiết" hoặc "dự báo"
     """
+    text = (update.message.text or "").lower()
+
     if update.effective_chat.type in [constants.ChatType.GROUP, constants.ChatType.SUPERGROUP]:
-        message = update.message
         bot_username = context.bot.username.lower()
-        text_lower = (message.text or "").lower()
 
-        # --- Fix check mention trong entity ---
-        is_mentioned = False
-        if message.entities:
-            for entity in message.entities:
-                if entity.type == "mention":
-                    mention_text = text_lower[entity.offset: entity.offset + entity.length]
-                    if bot_username in mention_text:
-                        is_mentioned = True
-                        break
-        
+        is_mentioned = f"@{bot_username}" in text
         is_reply_to_bot = (
-            message.reply_to_message
-            and message.reply_to_message.from_user.id == context.bot.id
+            update.message.reply_to_message
+            and update.message.reply_to_message.from_user.id == context.bot.id
         )
 
-        # --- Phải mention hoặc reply ---
-        if not is_mentioned and not is_reply_to_bot:
+        if not (is_mentioned or is_reply_to_bot):
+            return False  # 🚫 Không mention cũng không reply → không xử lý
+
+        # ✅ Nếu đã mention hoặc reply → Check keyword
+        if "thời tiết" in text or "dự báo" in text:
+            return True
+        else:
             return False
 
-        # --- Nếu đã qua mention/reply check, kiểm tra nội dung về thời tiết ---
-        if not await is_weather_related(text_lower):
-            return False
-
-    return True
-
-# --- Detect xem có nhắc đến thời tiết không
-async def is_weather_related(text: str) -> bool:
-    prompt = (
-        f"Người dùng nói: \"{text}\"\n"
-        f"Câu này có đang hỏi hoặc đề cập đến thời tiết không? "
-        f"Trả lời duy nhất bằng chữ 'có' hoặc 'không'."
-    )
-    try:
-        response = await openai_client.chat.completions.create(
-            model="gpt-4",
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=5,
-            temperature=0.0,
-        )
-        answer = response.choices[0].message.content.strip().lower()
-        return "có" in answer
-    except Exception:
-        return False
+    return False  # 🚫 Không phải group → không xử lý
 
 
 
