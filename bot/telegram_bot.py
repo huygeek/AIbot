@@ -45,26 +45,37 @@ async def should_respond_weather(update, context) -> bool:
     ✅ Chỉ trả lời nếu:
     - Ở trong group AND
     - Bị @mention hoặc reply
-    - Và câu hỏi có nhắc đến thời tiết
+    - Và nội dung có nhắc về thời tiết
     """
     if update.effective_chat.type in [constants.ChatType.GROUP, constants.ChatType.SUPERGROUP]:
+        message = update.message
         bot_username = context.bot.username.lower()
-        text_lower = (update.message.text or "").lower()
+        text_lower = (message.text or "").lower()
+
+        # --- Fix check mention trong entity ---
+        is_mentioned = False
+        if message.entities:
+            for entity in message.entities:
+                if entity.type == "mention":
+                    mention_text = text_lower[entity.offset: entity.offset + entity.length]
+                    if bot_username in mention_text:
+                        is_mentioned = True
+                        break
         
-        is_mentioned = f"@{bot_username}" in text_lower
         is_reply_to_bot = (
-            update.message.reply_to_message
-            and update.message.reply_to_message.from_user.id == context.bot.id
+            message.reply_to_message
+            and message.reply_to_message.from_user.id == context.bot.id
         )
 
+        # --- Phải mention hoặc reply ---
         if not is_mentioned and not is_reply_to_bot:
-            return False  # Không trả lời nếu không mention hoặc reply
+            return False
 
-        # Nếu đã mention hoặc reply → Kiểm tra nội dung có nhắc thời tiết không
+        # --- Nếu đã qua mention/reply check, kiểm tra nội dung về thời tiết ---
         if not await is_weather_related(text_lower):
-            return False  # Không nhắc thời tiết → không trả lời
+            return False
 
-    return True  # Nếu qua hết các điều kiện → trả lời
+    return True
 
 # --- Detect xem có nhắc đến thời tiết không
 async def is_weather_related(text: str) -> bool:
@@ -84,6 +95,7 @@ async def is_weather_related(text: str) -> bool:
         return "có" in answer
     except Exception:
         return False
+
 
 
 def find_coin_id_by_symbol(symbol):
