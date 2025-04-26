@@ -41,11 +41,11 @@ from utils import summarize_url, fetch_page_with_playwright  # ✅ thêm hàm m�
 async def is_weather_related(text: str) -> bool:
     prompt = (
         f"Người dùng nói: \"{text}\"\n"
-        f"Câu này có đang nói về thời tiết hoặc dự báo không? Trả lời duy nhất 'có' hoặc 'không'."
+        f"Câu này có đang nói về đúng chữ thời tiết không? Trả lời duy nhất 'có' hoặc 'không'."
     )
     try:
         response = await openai_client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=3,
         )
